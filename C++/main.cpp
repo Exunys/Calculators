@@ -11,85 +11,93 @@ using std::cin;
 using std::getline;
 using std::exception;
 
+stack<double> Values;
+stack<char> Operators;
+
+int GetOperatorPrecedence(char Operation) {
+	if (Operation == '+' || Operation == '-') {
+		return 1;
+	} else if (Operation == '*' || Operation == '/' || Operation == '%') {
+		return 2;
+	} else if (Operation == '^') {
+		return 3;
+	}
+
+	return 0; // Default precedence
+}
+
+bool HasHigherPrecedence(char Operation1, char Operation2) {
+	return (int)(GetOperatorPrecedence(Operation1)) >= (int)(GetOperatorPrecedence(Operation2));
+}
+
 bool IsOperator(char Char) {
 	return Char == '+' || Char == '-' || Char == '*' || Char == '/' || Char == '%' || Char == '^';
 }
 
 double PerformOperation(double A, double B, char Operation) {
 	switch (Operation) {
-		case '+':
-			return A + B; // ADD
-		case '-':
-			return A - B; // SUB
-		case '*':
-			return A * B; // MUL
-		case '/':
-			return A / B; // DIV
-		case '%':
-			return fmod(A, B); // MOD
-		case '^':
-			return pow(A, B); // POW
-		default:
-			return 0;
+	case '+':
+		return A + B;
+	case '-':
+		return A - B;
+	case '*':
+		return A * B;
+	case '/':
+		return A / B;
+	case '%':
+		return fmod(A, B);
+	case '^':
+		return pow(A, B);
+	default:
+		return 0;
 	}
 }
 
-double EvaluateExpression(const string& Expression) {
-	stack<double> Values;
-	stack<char> Operators;
+void ManageStack() {
+	char Operation = Operators.top();
+	Operators.pop();
 
+	if (Values.size() < 2) {
+		throw runtime_error("Invalid expression!");
+	}
+
+	double B = Values.top();
+	Values.pop();
+	double A = Values.top();
+	Values.pop();
+
+	Values.push(PerformOperation(A, B, Operation));
+}
+
+double EvaluateExpression(const string& Expression) {
 	for (size_t Index = 0; Index < Expression.size(); Index++) {
-		if (isspace(Expression[Index])) {
+		const char Value = Expression[Index];
+
+		if (isspace(Value)) { // Skip spaces
 			continue;
-		} else if (isdigit(Expression[Index]) || (Expression[Index] == '-' && (Index == 0 || IsOperator(Expression[Index - 1])))) {
+		} else if (isdigit(Value) || (Value == '-' && (Index == 0 || IsOperator(Expression[Index - 1])))) {
 			size_t _Index = Index;
-			
+
 			while (_Index < Expression.size() && (isdigit(Expression[_Index]) || Expression[_Index] == '.')) {
 				_Index++;
 			}
 
-			double Number = stod(Expression.substr(Index, _Index - Index));
-			Values.push(Number); // Insert number constant into stack
-
+			Values.push(stod(Expression.substr(Index, _Index - Index)));
 			Index = _Index - 1;
-		} else if (Expression[Index] == '(') {
-			Operators.push(Expression[Index]);
-		} else if (Expression[Index] == ')') {
+		} else if (Value == '(') {
+			Operators.push(Value);
+		} else if (Value == ')') {
 			while (!Operators.empty() && Operators.top() != '(') {
-				char Operation = Operators.top();
-				Operators.pop();
-
-				if (Values.size() < 2) {
-					throw runtime_error("Invalid Expression");
-				}
-
-				double B = Values.top();
-				Values.pop();
-				double A = Values.top();
-				Values.pop();
-				double Result = PerformOperation(A, B, Operation);
-				Values.push(Result);
+				ManageStack();
 			}
 
 			Operators.pop(); // Pop the opening parenthesis - "("
-		} else if (IsOperator(Expression[Index])) {
-			while (!Operators.empty() && Operators.top() != '(' && IsOperator(Operators.top()) && (Expression[Index] == '^' ? Expression[Index] < Operators.top() : Expression[Index] <= Operators.top())) {
-				char Operation = Operators.top();
-				Operators.pop();
-
-				if (Values.size() < 2) {
-					throw runtime_error("Invalid expression!");
-				}
-
-				double B = Values.top();
-				Values.pop();
-				double A = Values.top();
-				Values.pop();
-				double Result = PerformOperation(A, B, Operation);
-				Values.push(Result);
+		} else if (IsOperator(Value)) {
+			while (!Operators.empty() && Operators.top() != '(' && HasHigherPrecedence(Operators.top(), Value)) {
+				ManageStack();
 			}
 
-			Operators.push(Expression[Index]);
+			Operators.push(Value);
 		} else {
 			throw runtime_error("Invalid character in expression!");
 		}
@@ -107,8 +115,8 @@ double EvaluateExpression(const string& Expression) {
 		Values.pop();
 		double A = Values.top();
 		Values.pop();
-		double Result = PerformOperation(A, B, Operation);
-		Values.push(Result);
+
+		Values.push(PerformOperation(A, B, Operation));
 	}
 
 	if (Values.size() != 1) {
@@ -128,7 +136,7 @@ int main() {
 		getline(cin, Expression);
 
 		try {
-			cout << "\n Stack returns (result):\n\n  [>]  " << EvaluateExpression(Expression);
+			cout << "\n Stack returns (result):\n\n  [>]  " << EvaluateExpression(Expression) << "\n";
 		} catch (const exception& Error) {
 			cout << "\n Error: " << Error.what() << "\n";
 		}
