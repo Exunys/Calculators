@@ -104,19 +104,7 @@ double EvaluateExpression(const string& Expression) {
 	}
 
 	while (!Operators.empty()) {
-		char Operation = Operators.top();
-		Operators.pop();
-
-		if (Values.size() < 2) {
-			throw runtime_error("Invalid expression!");
-		}
-
-		double B = Values.top();
-		Values.pop();
-		double A = Values.top();
-		Values.pop();
-
-		Values.push(PerformOperation(A, B, Operation));
+		ManageStack();
 	}
 
 	if (Values.size() != 1) {
