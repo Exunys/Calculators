@@ -2,6 +2,25 @@ using System;
 using System.Collections.Generic;
 
 class Program {
+	static Stack<double> Values = new Stack<double>();
+	static Stack<char> Operators = new Stack<char>();
+
+	static int GetOperatorPrecedence(char Operation) {
+		if (Operation == '+' || Operation == '-') {
+			return 1;
+		} else if (Operation == '*' || Operation == '/' || Operation == '%') {
+			return 2;
+		} else if (Operation == '^') {
+			return 3;
+		}
+
+		return 0; // Default precedence
+	}
+
+	static bool HasHigherPrecedence(char Operation1, char Operation2) {
+		return GetOperatorPrecedence(Operation1) >= GetOperatorPrecedence(Operation2);
+	}
+
 	static bool IsOperator(char Char) {
 		return Char == '+' || Char == '-' || Char == '*' || Char == '/' || Char == '%' || Char == '^';
 	}
@@ -9,91 +28,71 @@ class Program {
 	static double PerformOperation(double A, double B, char Operation) {
 		switch (Operation) {
 			case '+':
-				return A + B; // ADD
+				return A + B;
 			case '-':
-				return A - B; // SUB
+				return A - B;
 			case '*':
-				return A * B; // MUL
+				return A * B;
 			case '/':
-				return A / B; // DIV
+				return A / B;
 			case '%':
-				return A % B; // MOD
+				return A % B;
 			case '^':
-				return Math.Pow(A, B); // POW
+				return Math.Pow(A, B);
 			default:
 				return 0;
 		}
 	}
 
-	static double EvaluateExpression(string Expression) {
-		Stack<double> Values = new Stack<double>();
-		Stack<char> Operators = new Stack<char>();
+	static void ManageStack() {
+		char Operation = Operators.Pop();
 
+		if (Values.Count < 2) {
+			throw new InvalidOperationException("Invalid expression!");
+		}
+
+		double B = Values.Pop();
+		double A = Values.Pop();
+
+		Values.Push(PerformOperation(A, B, Operation));
+	}
+
+	static double EvaluateExpression(string Expression) {
 		for (int Index = 0; Index < Expression.Length; Index++) {
-			if (char.IsWhiteSpace(Expression[Index])) {
+			char Value = Expression[Index];
+
+			if (char.IsWhiteSpace(Value)) { // Skip spaces
 				continue;
-			} else if (char.IsDigit(Expression[Index]) || (Expression[Index] == '-' && (Index == 0 || IsOperator(Expression[Index - 1])))) {
+			} else if (char.IsDigit(Value) || (Value == '-' && (Index == 0 || IsOperator(Expression[Index - 1])))) {
 				int _Index = Index;
 
 				while (_Index < Expression.Length && (char.IsDigit(Expression[_Index]) || Expression[_Index] == '.')) {
 					_Index++;
 				}
 
-				double Number = double.Parse(Expression.Substring(Index, _Index - Index));
-				Values.Push(Number); // Insert number constant into stack
-
+				Values.Push(double.Parse(Expression.Substring(Index, _Index - Index)));
 				Index = _Index - 1;
-			} else if (Expression[Index] == '(') {
-				Operators.Push(Expression[Index]);
-			} else if (Expression[Index] == ')') {
+			} else if (Value == '(') {
+				Operators.Push(Value);
+			} else if (Value == ')') {
 				while (Operators.Count > 0 && Operators.Peek() != '(') {
-					char Operation = Operators.Pop();
-
-					if (Values.Count < 2) {
-						throw new InvalidOperationException("Invalid Expression");
-					}
-
-					double B = Values.Pop();
-					double A = Values.Pop();
-					double Result = PerformOperation(A, B, Operation);
-
-					Values.Push(Result);
+					ManageStack();
 				}
 
 				Operators.Pop(); // Pop the opening parenthesis - "("
-			} else if (IsOperator(Expression[Index])) {
-				while (Operators.Count > 0 && Operators.Peek() != '(' && IsOperator(Operators.Peek()) && (Expression[Index] == '^' ? Expression[Index] < Operators.Peek() : Expression[Index] <= Operators.Peek())) {
-					char Operation = Operators.Pop();
-
-					if (Values.Count < 2) {
-						throw new InvalidOperationException("Invalid expression!");
-					}
-
-					double B = Values.Pop();
-					double A = Values.Pop();
-					double Result = PerformOperation(A, B, Operation);
-
-					Values.Push(Result);
+			} else if (IsOperator(Value)) {
+				while (Operators.Count > 0 && Operators.Peek() != '(' && HasHigherPrecedence(Operators.Peek(), Value)) {
+					ManageStack();
 				}
 
-				Operators.Push(Expression[Index]);
+				Operators.Push(Value);
 			} else {
 				throw new InvalidOperationException("Invalid character in expression!");
 			}
 		}
 
 		while (Operators.Count > 0) {
-			char Operation = Operators.Pop();
-
-			if (Values.Count < 2) {
-				throw new InvalidOperationException("Invalid expression!");
-			}
-
-			double B = Values.Pop();
-			double A = Values.Pop();
-			double Result = PerformOperation(A, B, Operation);
-
-			Values.Push(Result);
+			ManageStack();
 		}
 
 		if (Values.Count != 1) {
