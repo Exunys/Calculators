@@ -128,7 +128,7 @@ int main() {
 		getline(cin, Expression);
 
 		try {
-			cout << "\n Stack returns (result):\n\n  [>]  " << EvaluateExpression(Expression) << "\n";
+			cout << "\n Stack returns (result):\n\n  [>]  " << EvaluateExpression(Expression);
 		} catch (const exception& Error) {
 			cout << "\n Error: " << Error.what() << "\n";
 		}
