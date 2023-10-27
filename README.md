@@ -15,5 +15,6 @@ All of the programs are console applications.
 ### - [Lua 5.1](https://github.com/Exunys/Calculators/blob/main/Lua%205.1/main.lua)
 ### - [C++](https://github.com/Exunys/Calculators/blob/main/C%2B%2B/main.cpp)
 ### - [C#](https://github.com/Exunys/Calculators/blob/main/C%23/main.cs)
+### - [Java](https://github.com/Exunys/Calculators/blob/main/Java/main.java)
 
 More soon...
