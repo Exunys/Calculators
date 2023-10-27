@@ -3,6 +3,8 @@ This repository is just an example of a VM-based arithmetic model (calculator) f
 
 This repository is made solely out of boredom and for learning purposes, I guess...
 
+All of the programs are console applications.
+
 <details> <summary> Preview (Lua 5.1) </summary>
 
 ![image](https://github.com/Exunys/Calculators/assets/76539058/cc592933-610c-4d79-9f63-55d6eb58f45d)
