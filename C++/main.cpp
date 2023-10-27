@@ -36,20 +36,20 @@ bool IsOperator(char Char) {
 
 double PerformOperation(double A, double B, char Operation) {
 	switch (Operation) {
-	case '+':
-		return A + B;
-	case '-':
-		return A - B;
-	case '*':
-		return A * B;
-	case '/':
-		return A / B;
-	case '%':
-		return fmod(A, B);
-	case '^':
-		return pow(A, B);
-	default:
-		return 0;
+		case '+':
+			return A + B;
+		case '-':
+			return A - B;
+		case '*':
+			return A * B;
+		case '/':
+			return A / B;
+		case '%':
+			return fmod(A, B);
+		case '^':
+			return pow(A, B);
+		default:
+			return 0;
 	}
 }
 
